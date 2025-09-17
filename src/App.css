@@ -105,3 +105,66 @@
   color: #555;
   margin-bottom: 1rem;
 }
+
+.comments-section ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.comments-section li {
+  margin-bottom: 0.75rem;
+  background: #f4f4f4;
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: #0077cc;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.toggle-btn:hover {
+  text-decoration: underline;
+}
+
+.add-comment {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.add-comment textarea {
+  resize: vertical;
+  min-height: 60px;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.add-comment button {
+  align-self: flex-end;
+  padding: 0.4rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #0077cc;
+  color: #fff;
+  cursor: pointer;
+}
+
+.add-comment button:hover {
+  background-color: #005fa3;
+}
+
+.post-image {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin: 0.5rem 0 1rem;
+  object-fit: cover;
+}
+

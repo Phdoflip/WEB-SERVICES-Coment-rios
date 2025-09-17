@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-// Tipagem para os posts
 interface Post {
   id: number;
   userId: number;
@@ -9,14 +8,12 @@ interface Post {
   body: string;
 }
 
-// Tipagem para os usuários fake
 interface User {
   id: number;
   name: string;
   email: string;
 }
 
-// Tipagem para os comentários
 interface Comment {
   postId: number;
   id: number;
@@ -25,7 +22,6 @@ interface Comment {
   body: string;
 }
 
-// Usuários mockados
 const users: User[] = [
   { id: 8, name: "Lucas Andrade", email: "lucas.andrade@example.com" },
   { id: 1, name: "Maria Souza", email: "maria.souza@example.com" },
@@ -36,6 +32,7 @@ const users: User[] = [
 const App: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [expandedPosts, setExpandedPosts] = useState<number[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,8 +40,6 @@ const App: React.FC = () => {
     const fetchData = async () => {
       try {
         await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Puxa posts e comentários em paralelo
         const [postsResponse, commentsResponse] = await Promise.all([
           fetch('https://jsonplaceholder.typicode.com/posts'),
           fetch('https://jsonplaceholder.typicode.com/comments'),
@@ -73,20 +68,32 @@ const App: React.FC = () => {
     fetchData();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="loading-screen">
-        <p className="loading-text">Carregando posts...</p>
-      </div>
+  const toggleComments = (postId: number) => {
+    setExpandedPosts(prev =>
+      prev.includes(postId)
+        ? prev.filter(id => id !== postId)
+        : [...prev, postId]
     );
+  };
+
+  const handleAddComment = (postId: number, text: string) => {
+    if (!text.trim()) return;
+    const newComment: Comment = {
+      id: Date.now(),
+      postId,
+      name: "Você",
+      email: "voce@example.com",
+      body: text,
+    };
+    setComments(prev => [...prev, newComment]);
+  };
+
+  if (loading) {
+    return <p>Carregando posts...</p>;
   }
 
   if (error) {
-    return (
-      <div className="error-screen">
-        <p className="error-text">Erro ao buscar dados: {error}</p>
-      </div>
-    );
+    return <p>Erro: {error}</p>;
   }
 
   return (
@@ -94,31 +101,42 @@ const App: React.FC = () => {
       <div className="container">
         <h1 className="main-title">Blog Posts - JSONPlaceholder</h1>
         <div className="posts-grid">
-          {posts.map((post) => {
+          {posts.map(post => {
             const user = users.find(u => u.id === post.userId);
-
-            // Filtra comentários para esse post
             const postComments = comments.filter(c => c.postId === post.id);
+            const isExpanded = expandedPosts.includes(post.id);
+            const visibleComments = isExpanded
+              ? postComments
+              : postComments.slice(0, 3);
 
             return (
               <div key={post.id} className="post-card">
-                {/* Nome do Usuário + "diz:" */}
+                {/* Nome do usuário */}
                 <h2 className="post-author">
                   {user ? `${user.name} diz:` : "Usuário desconhecido diz:"}
                 </h2>
 
-                <h3 className="post-title">{post.title}</h3>
+                {/* Imagem do post */}
+                <img
+                  src={`https://picsum.photos/seed/${post.id}/400/200`}
+                  alt="Imagem ilustrativa"
+                  className="post-image"
+                />
 
+                {/* Título e corpo */}
+                <h3 className="post-title">{post.title}</h3>
                 <p className="post-body">{post.body}</p>
 
-                {/* Lista de comentários */}
+                {/* Comentários */}
                 <div className="comments-section">
                   <h4>Comentários:</h4>
-                  {postComments.length > 0 ? (
+                  {visibleComments.length > 0 ? (
                     <ul>
-                      {postComments.map((comment) => (
+                      {visibleComments.map(comment => (
                         <li key={comment.id}>
-                          <p><strong>{comment.name}</strong> ({comment.email})</p>
+                          <p>
+                            <strong>{comment.name} comenta:</strong>
+                          </p>
                           <p>{comment.body}</p>
                         </li>
                       ))}
@@ -126,6 +144,34 @@ const App: React.FC = () => {
                   ) : (
                     <p>Sem comentários</p>
                   )}
+
+                  {postComments.length > 3 && (
+                    <button
+                      className="toggle-btn"
+                      onClick={() => toggleComments(post.id)}
+                    >
+                      {isExpanded ? "Ver menos" : "Ver mais comentários"}
+                    </button>
+                  )}
+
+                  {/* Caixa para novo comentário */}
+                  <div className="add-comment">
+                    <textarea
+                      placeholder="Escreva um comentário..."
+                      id={`comment-${post.id}`}
+                    />
+                    <button
+                      onClick={() => {
+                        const textarea = document.getElementById(
+                          `comment-${post.id}`
+                        ) as HTMLTextAreaElement;
+                        handleAddComment(post.id, textarea.value);
+                        textarea.value = "";
+                      }}
+                    >
+                      Comentar
+                    </button>
+                  </div>
                 </div>
               </div>
             );
